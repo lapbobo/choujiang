@@ -133,6 +133,7 @@ class LuckyDrawApp {
      */
     resetConfig() {
         this.config = {
+            eventTitle: '幸运大抽奖',
             minNumber: 1,
             maxNumber: 200,
             prizes: [
@@ -213,6 +214,23 @@ class LuckyDrawApp {
         localStorage.removeItem('luckyDrawConfig');
         localStorage.removeItem('luckyDrawWinners');
         this.resetConfig();
+        this.initPrizePool();
+        this.initWinners();
+        this.state.currentPrizeIndex = 0;
+        this.state.allPrizesFinished = false;
+        this.state.isRunning = false;
+        this.updateRollingNumber('准备开始', true);
+        this.elements.btnStart.disabled = false;
+        this.elements.btnStart.textContent = '开始抽奖';
+        this.renderPrizeBoard();
+        this.updateCurrentPrizeDisplay();
+    }
+
+    /**
+     * 只重置抽奖数据（中奖记录），保持奖项配置不变
+     */
+    resetDrawData() {
+        localStorage.removeItem('luckyDrawWinners');
         this.initPrizePool();
         this.initWinners();
         this.state.currentPrizeIndex = 0;
@@ -736,11 +754,31 @@ class LuckyDrawApp {
         audioManager.play('button');
 
         if (this.state.allPrizesFinished) {
-            // 如果抽奖已结束，直接重新开始
-            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！')) {
-                this.clearAllData();
+            // 如果抽奖已结束，直接重置抽奖
+            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n奖项配置将保持不变。')) {
+                this.resetDrawData();
                 alert('✅ 抽奖已重置！');
             }
+        } else {
+            // 如果抽奖未结束，需要二次确认
+            const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
+            const currentWinners = this.state.winners[this.state.currentPrizeIndex];
+            const remaining = currentPrize.count - currentWinners.length;
+
+            const message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n⚠️ 确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n奖项配置将保持不变。\n\n请再次确认是否继续？`;
+
+            // 第一次确认
+            if (confirm(message)) {
+                // 第二次确认（防止误操作）
+                if (confirm('⚠️ 警告：此操作不可撤销！\n\n您确定要删除所有中奖记录并重置抽奖吗？\n\n奖项配置将保持不变。')) {
+                    this.resetDrawData();
+                    alert('✅ 抽奖已重置！');
+                } else {
+                    audioManager.play('button');
+                }
+            }
+        }
+    }
         } else {
             // 如果抽奖未结束，需要二次确认
             const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
