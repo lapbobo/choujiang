@@ -429,11 +429,13 @@ class LuckyDrawApp {
      * 切换到下一个奖项
      */
     nextPrize() {
-        if (this.state.currentPrizeIndex < this.config.prizes.length - 1) {
-            this.state.currentPrizeIndex++;
-            this.updateCurrentPrizeDisplay();
-            this.renderPrizeBoard();
-        } else {
+        // 检查是否还有未完成的奖项
+        const hasUnfinishedPrizes = this.config.prizes.some((prize, index) => {
+            const winners = this.state.winners[index];
+            return winners.length < prize.count;
+        });
+
+        if (!hasUnfinishedPrizes) {
             // 所有奖项都已抽完
             this.state.allPrizesFinished = true;
             this.updateRollingNumber('抽奖结束', true);
@@ -441,6 +443,19 @@ class LuckyDrawApp {
             this.elements.btnStart.textContent = '已完成';
             audioManager.play('finish');
             effectsManager.playConfetti(5000);
+            return;
+        }
+
+        // 找到下一个未完成的奖项
+        for (let i = 0; i < this.config.prizes.length; i++) {
+            const prize = this.config.prizes[i];
+            const winners = this.state.winners[i];
+            if (winners.length < prize.count) {
+                this.state.currentPrizeIndex = i;
+                this.updateCurrentPrizeDisplay();
+                this.renderPrizeBoard();
+                return;
+            }
         }
     }
 
@@ -826,7 +841,7 @@ class LuckyDrawApp {
 
         // 设置画布大小
         canvas.width = 1200;
-        canvas.height = 1600;
+        canvas.height = 1800;
 
         // 绘制背景
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -836,42 +851,99 @@ class LuckyDrawApp {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // 绘制标题
-        ctx.fillStyle = '#2D3748';
-        ctx.font = 'bold 48px Arial';
+        ctx.fillStyle = '#2D1B69';
+        ctx.font = 'bold 56px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('幸运大抽奖 - 中奖名单', canvas.width / 2, 100);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${this.config.eventTitle} - 中奖名单`, canvas.width / 2, 80);
+
+        // 定义奖项小球颜色
+        const ballColors = [
+            { bg: ['#FFD700', '#FFEC8B'], shadow: 'rgba(255, 215, 0, 0.4)', text: '#DC2626' },  // 一等奖：金色
+            { bg: ['#3B82F6', '#60A5FA'], shadow: 'rgba(59, 130, 246, 0.4)', text: '#DC2626' },  // 二等奖：蓝色
+            { bg: ['#CD7F32', '#DEB887'], shadow: 'rgba(205, 127, 50, 0.4)', text: '#DC2626' },  // 三等奖：铜色
+            { bg: ['#FF6B6B', '#FF8E8E'], shadow: 'rgba(255, 107, 107, 0.4)', text: '#DC2626' }   // 幸运奖：红色
+        ];
 
         // 绘制奖项
-        let y = 200;
+        let y = 180;
+        const ballRadius = 35;
+        const ballSpacing = 80;
+        const ballWidth = ballRadius * 2;
+        
         this.config.prizes.forEach((prize, index) => {
             const winners = this.state.winners[index];
+            const colors = ballColors[index] || ballColors[3];
 
             // 绘制奖项名称
-            ctx.fillStyle = '#FF6B6B';
+            ctx.fillStyle = '#2D1B69';
             ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
             ctx.fillText(`${prize.name} (${winners.length}/${prize.count})`, 100, y);
 
-            // 绘制中奖号码
-            ctx.fillStyle = '#2D3748';
-            ctx.font = '24px Arial';
+            // 绘制中奖号码小球
             let x = 100;
-            winners.forEach(winner => {
-                ctx.fillText(winner, x, y + 40);
-                x += 80;
-                if (x > canvas.width - 100) {
+            const startY = y + 50;
+            let currentLineY = startY;
+
+            winners.forEach((winner, winnerIndex) => {
+                // 检查是否需要换行
+                if (x + ballWidth > canvas.width - 100) {
                     x = 100;
-                    y += 70;
+                    currentLineY += ballWidth + 15;
                 }
+
+                // 绘制小球阴影
+                ctx.beginPath();
+                ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
+                ctx.fillStyle = colors.shadow;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 5;
+                ctx.fill();
+
+                // 绘制小球背景（渐变）
+                const ballGradient = ctx.createRadialGradient(
+                    x + ballRadius - 10, currentLineY + ballRadius - 10, 0,
+                    x + ballRadius, currentLineY + ballRadius, ballRadius
+                );
+                ballGradient.addColorStop(0, colors.bg[1]);
+                ballGradient.addColorStop(1, colors.bg[0]);
+                
+                ctx.beginPath();
+                ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
+                ctx.fillStyle = ballGradient;
+                ctx.shadowColor = 'transparent';
+                ctx.fill();
+
+                // 绘制高光效果
+                ctx.beginPath();
+                ctx.arc(x + ballRadius - 8, currentLineY + ballRadius - 8, 8, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+                ctx.shadowBlur = 8;
+                ctx.fill();
+
+                // 绘制数字
+                ctx.fillStyle = colors.text;
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(winner, x + ballRadius, currentLineY + ballRadius + 2);
+
+                x += ballSpacing;
             });
 
-            y += 80;
+            y += currentLineY - startY + ballWidth + 40;
         });
 
         // 添加水印
-        ctx.fillStyle = 'rgba(45, 55, 72, 0.5)';
+        ctx.fillStyle = 'rgba(45, 27, 105, 0.5)';
         ctx.font = '16px Arial';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
         ctx.fillText('Powered by Choujiang-Webapp', canvas.width / 2, canvas.height - 30);
 
         // 下载图片
