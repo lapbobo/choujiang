@@ -71,26 +71,17 @@ class LuckyDrawApp {
         // 初始化中奖记录
         this.initWinners();
 
-        // 初始化滚动数字显示
-        this.updateRollingNumber('准备开始', true);
-
         // 更新主标题
         this.updateMainTitle();
 
-        // 渲染奖项列表
-        this.renderPrizeBoard();
-
-        // 渲染奖项列表
-        this.renderPrizeBoard();
-
         // 初始化滚动数字显示
-        this.elements.rollingNumber.textContent = '准备开始';
-
-        // 渲染奖项列表
-        this.renderPrizeBoard();
+        this.updateRollingNumber('准备开始', true);
 
         // 更新当前奖项显示
         this.updateCurrentPrizeDisplay();
+
+        // 渲染奖项列表
+        this.renderPrizeBoard();
 
         // 绑定事件
         this.bindEvents();
