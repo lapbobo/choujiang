@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸运大抽奖 - Lucky Draw Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button id="btn-settings" class="btn-small">抽奖设置</button>
+                <button id="btn-fullscreen" class="btn-small">全屏显示</button>
+            </div>
+            <div class="nav-right">
+                <button id="btn-sound" class="btn-icon sound-on" aria-label="音效开关"></button>
+            </div>
+        </nav>
+
+        <!-- 主标题 -->
+        <h1 class="main-title">幸运大抽奖</h1>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 滚动数字区域 -->
+            <div class="rolling-section">
+                <div class="current-prize">
+                    <span id="current-prize-name">一等奖</span>
+                    <span id="current-prize-count" class="prize-count">剩余 1 个</span>
+                </div>
+                <div class="rolling-number-container">
+                    <div id="rolling-number" class="rolling-number">准备开始</div>
+                </div>
+                <button id="btn-start" class="btn-primary btn-large">开始抽奖</button>
+            </div>
+
+            <!-- 奖池看板区域 -->
+            <div class="prize-board-section">
+                <div class="prize-board-header">
+                    <h2>中奖名单</h2>
+                    <button id="btn-export" class="btn-small">导出图片</button>
+                </div>
+                <div class="prize-board" id="prize-board">
+                    <!-- 奖项列表将通过 JS 动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽奖设置弹窗 -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>抽奖设置</h2>
+                <button id="btn-close-modal" class="btn-close">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- 抽奖范围设置 -->
+                <div class="settings-section">
+                    <h3>抽奖号码范围</h3>
+                    <div class="settings-row">
+                        <label for="min-number">最小号码</label>
+                        <input type="number" id="min-number" value="1" min="1">
+                        <span>至</span>
+                        <label for="max-number">最大号码</label>
+                        <input type="number" id="max-number" value="200" max="10000">
+                    </div>
+                </div>
+
+                <!-- 奖项配置 -->
+                <div class="settings-section">
+                    <h3>奖项配置</h3>
+                    <div id="prize-config-list" class="prize-config-list">
+                        <!-- 奖项配置将通过 JS 动态生成 -->
+                    </div>
+                    <button id="btn-add-prize" class="btn-secondary">+ 添加奖项</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-reset-default" class="btn-secondary">重置默认</button>
+                <button id="btn-save-settings" class="btn-primary">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas 用于彩带特效 -->
+    <canvas id="confetti-canvas" class="confetti-canvas"></canvas>
+
+    <!-- 导入 JavaScript -->
+    <script src="js/audio.js"></script>
+    <script src="js/effects.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
