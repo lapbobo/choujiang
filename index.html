@@ -7,6 +7,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        .editable-title:empty:before {
+            content: attr(data-placeholder);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .editable-title:focus {
+            outline: 2px solid rgba(168, 85, 247, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+    </style>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -21,7 +32,7 @@
         </nav>
 
         <!-- 主标题 -->
-        <h1 class="main-title">幸运大抽奖</h1>
+        <h1 id="main-title" class="main-title editable-title" contenteditable="true" data-placeholder="幸运大抽奖" maxlength="10">幸运大抽奖</h1>
 
         <!-- 主内容区域 -->
         <div class="main-content">
@@ -58,6 +69,16 @@
                 <button id="btn-close-modal" class="btn-close">×</button>
             </div>
             <div class="modal-body">
+                <!-- 主标题设置 -->
+                <div class="settings-section">
+                    <h3>主标题设置</h3>
+                    <div class="settings-row">
+                        <label for="event-title">标题名称</label>
+                        <input type="text" id="event-title" maxlength="10" placeholder="幸运大抽奖">
+                        <span class="limit-hint">最多 10 个字</span>
+                    </div>
+                </div>
+
                 <!-- 抽奖范围设置 -->
                 <div class="settings-section">
                     <h3>抽奖号码范围</h3>
