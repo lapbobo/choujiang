@@ -10,6 +10,7 @@ class LuckyDrawApp {
             minNumber: 1,
             maxNumber: 200,
             prizes: [
+                { name: '特等奖', count: 1 },
                 { name: '一等奖', count: 1 },
                 { name: '二等奖', count: 2 },
                 { name: '三等奖', count: 3 },
@@ -110,6 +111,7 @@ class LuckyDrawApp {
             minNumber: 1,
             maxNumber: 200,
             prizes: [
+                { name: '特等奖', count: 1 },
                 { name: '一等奖', count: 1 },
                 { name: '二等奖', count: 2 },
                 { name: '三等奖', count: 3 },
@@ -372,9 +374,19 @@ class LuckyDrawApp {
     renderPrizeBoard() {
         this.elements.prizeBoard.innerHTML = '';
 
+        // 创建特等奖和其他奖项的容器
+        const grandPrizeContainer = document.createElement('div');
+        grandPrizeContainer.className = 'grand-prize-container';
+        
+        const regularPrizesContainer = document.createElement('div');
+        regularPrizesContainer.className = 'prize-board-row';
+
+        // 遍历奖项
         this.config.prizes.forEach((prize, index) => {
             const prizeItem = document.createElement('div');
             prizeItem.className = 'prize-item';
+            prizeItem.dataset.prizeType = prize.name;
+            prizeItem.dataset.prizeIndex = index;
 
             if (index === this.state.currentPrizeIndex && !this.state.allPrizesFinished) {
                 prizeItem.classList.add('active');
@@ -389,12 +401,27 @@ class LuckyDrawApp {
                     <span class="prize-item-count">剩余 ${remaining} 个</span>
                 </div>
                 <div class="prize-item-numbers">
-                    ${winners.map(winner => `<span class="winner-number">${winner}</span>`).join('')}
+                    ${winners.map(winner => `<span class="winner-number" data-prize-index="${index}">${winner}</span>`).join('')}
                 </div>
             `;
 
-            this.elements.prizeBoard.appendChild(prizeItem);
+            // 判断是否为特等奖
+            if (prize.name.includes('特等')) {
+                grandPrizeContainer.appendChild(prizeItem);
+            } else {
+                regularPrizesContainer.appendChild(prizeItem);
+            }
         });
+
+        // 先添加特等奖
+        if (grandPrizeContainer.children.length > 0) {
+            this.elements.prizeBoard.appendChild(grandPrizeContainer);
+        }
+
+        // 再添加其他奖项
+        if (regularPrizesContainer.children.length > 0) {
+            this.elements.prizeBoard.appendChild(regularPrizesContainer);
+        }
     }
 
     /**

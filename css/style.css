@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', '黑体', sans-serif;
     background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FECFEF 100%);
     color: #2D3748;
     min-height: 100vh;
@@ -30,10 +30,10 @@ body::before {
     z-index: 0;
 }
 
-/* 字体变量 */
+/* 字体变量 - 全部使用黑体 */
 :root {
-    --font-display: 'Fredoka One', cursive;
-    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-display: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', '黑体', sans-serif;
+    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'SimHei', '黑体', sans-serif;
     
     /* 配色方案 */
     --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
@@ -96,7 +96,8 @@ body::before {
 .btn-small {
     padding: 8px 16px;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 700;
+    font-family: var(--font-display);
     border: none;
     border-radius: 8px;
     background: linear-gradient(135deg, #FFB88C 0%, #FF6B6B 100%);
@@ -155,6 +156,7 @@ body::before {
     text-align: center;
     font-family: var(--font-display);
     font-size: 56px;
+    font-weight: 900;
     background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -163,7 +165,7 @@ body::before {
     text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
     padding-top: 10px;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
     animation: titleGlow 3s ease-in-out infinite;
     height: 70px;
     box-sizing: border-box;
@@ -259,8 +261,9 @@ body::before {
 #current-prize-name {
     font-family: var(--font-display);
     font-size: 36px;
+    font-weight: 900;
     color: #FF6B6B;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
 }
 
 .prize-count {
@@ -284,13 +287,47 @@ body::before {
 .rolling-number {
     font-family: var(--font-display);
     font-size: 120px;
+    font-weight: 900;
     background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.15);
     transition: all 0.1s ease;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+}
+
+/* 滚动数字也改为彩色球样式 */
+.rolling-number.winner {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFD700 0%, #FFEC8B 50%, #FFD700 100%);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 10px 20px rgba(0, 0, 0, 0.2),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.2),
+        inset 0 10px 20px rgba(255, 255, 255, 0.4);
+    color: white;
+    -webkit-text-fill-color: white;
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+    margin: 0 auto;
+}
+
+.rolling-number.winner::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
 .rolling-number.animate {
@@ -317,7 +354,7 @@ body::before {
 .btn-large {
     padding: 12px 50px;
     font-size: 22px;
-    font-weight: 600;
+    font-weight: 900;
     font-family: var(--font-display);
     border: none;
     border-radius: 12px;
@@ -327,7 +364,7 @@ body::before {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-glow);
     margin-top: 10px;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
     position: relative;
     overflow: hidden;
 }
@@ -392,15 +429,44 @@ body::before {
 .prize-board-header h2 {
     font-family: var(--font-display);
     font-size: 28px;
+    font-weight: 900;
     color: #2D3748;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
 }
 
 .prize-board {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* 特等奖容器 */
+.grand-prize-container {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.grand-prize-container .prize-item {
+    width: 100%;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFEC8B 50%, #FFD700 100%);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+}
+
+/* 其他奖项在同一行显示 */
+.prize-board-row {
+    display: flex;
     gap: 15px;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.prize-board-row .prize-item {
+    flex: 1;
+    min-width: 0;
 }
 
 .prize-item {
@@ -451,8 +517,9 @@ body::before {
 .prize-item-name {
     font-family: var(--font-display);
     font-size: 20px;
+    font-weight: 900;
     color: #2D3748;
-    letter-spacing: 0.5px;
+    letter-spacing: 2px;
 }
 
 .prize-item.active .prize-item-name {
@@ -485,36 +552,79 @@ body::before {
 
 .winner-number {
     font-family: var(--font-display);
-    font-size: 18px;
-    color: #FF6B6B;
-    padding: 6px 14px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    animation: fadeIn 0.3s ease;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    padding: 0;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 4px 8px rgba(255, 255, 255, 0.4);
+    animation: fadeIn 0.3s ease, ballBounce 0.5s ease-out;
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 50%, #FF6B6B 100%);
 }
 
 .winner-number:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    transform: translateY(-4px) scale(1.1);
+    box-shadow: 
+        0 12px 24px rgba(0, 0, 0, 0.3),
+        0 6px 12px rgba(0, 0, 0, 0.15),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 4px 8px rgba(255, 255, 255, 0.4);
 }
 
-.winner-number::before {
+/* 不同奖项的彩色小球 */
+.winner-number[data-prize-index="0"] {
+    background: linear-gradient(135deg, #FFD700 0%, #FFEC8B 50%, #FFD700 100%);
+}
+
+.winner-number[data-prize-index="1"] {
+    background: linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 50%, #C0C0C0 100%);
+}
+
+.winner-number[data-prize-index="2"] {
+    background: linear-gradient(135deg, #CD7F32 0%, #DEB887 50%, #CD7F32 100%);
+}
+
+.winner-number[data-prize-index="3"] {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 50%, #FF6B6B 100%);
+}
+
+/* 高光效果 */
+.winner-number::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.2), transparent);
-    transition: left 0.5s;
+    top: 8px;
+    left: 8px;
+    width: 15px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
 }
 
-.winner-number:hover::before {
-    left: 100%;
+@keyframes ballBounce {
+    0% { 
+        transform: scale(0) translateY(20px); 
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) translateY(-10px);
+    }
+    100% { 
+        transform: scale(1) translateY(0); 
+        opacity: 1;
+    }
 }
 
 @keyframes fadeIn {
