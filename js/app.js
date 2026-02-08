@@ -35,7 +35,6 @@ class LuckyDrawApp {
             btnSettings: document.getElementById('btn-settings'),
             btnFullscreen: document.getElementById('btn-fullscreen'),
             btnRestart: document.getElementById('btn-restart'),
-            btnSound: document.getElementById('btn-sound'),
             btnExport: document.getElementById('btn-export'),
             prizeBoard: document.getElementById('prize-board'),
             settingsModal: document.getElementById('settings-modal'),
@@ -68,6 +67,15 @@ class LuckyDrawApp {
 
         // 初始化中奖记录
         this.initWinners();
+
+        // 初始化滚动数字显示
+        this.updateRollingNumber('准备开始', true);
+
+        // 渲染奖项列表
+        this.renderPrizeBoard();
+
+        // 渲染奖项列表
+        this.renderPrizeBoard();
 
         // 初始化滚动数字显示
         this.elements.rollingNumber.textContent = '准备开始';
@@ -204,7 +212,7 @@ class LuckyDrawApp {
         this.state.currentPrizeIndex = 0;
         this.state.allPrizesFinished = false;
         this.state.isRunning = false;
-        this.elements.rollingNumber.textContent = '准备开始';
+        this.updateRollingNumber('准备开始', true);
         this.elements.btnStart.disabled = false;
         this.elements.btnStart.textContent = '开始抽奖';
         this.renderPrizeBoard();
@@ -234,9 +242,6 @@ class LuckyDrawApp {
 
         // 重新开始按钮
         this.elements.btnRestart.addEventListener('click', () => this.confirmRestart());
-
-        // 音效按钮
-        this.elements.btnSound.addEventListener('click', () => this.toggleSound());
 
         // 导出图片按钮
         this.elements.btnExport.addEventListener('click', () => this.exportAsImage());
@@ -317,6 +322,10 @@ class LuckyDrawApp {
         this.elements.btnStart.textContent = '停止';
         audioManager.play('start');
 
+        // 添加滚动状态类（移除过渡效果）
+        this.elements.rollingNumber.classList.remove('text-state', 'winner');
+        this.elements.rollingNumber.classList.add('rolling');
+
         // 开始滚动数字
         this.rollingInterval = setInterval(() => {
             const randomIndex = Math.floor(Math.random() * this.state.prizePool.length);
@@ -351,6 +360,7 @@ class LuckyDrawApp {
 
         // 更新 UI
         this.elements.rollingNumber.textContent = winner;
+        this.elements.rollingNumber.classList.remove('rolling');
         this.elements.rollingNumber.classList.add('winner');
         effectsManager.addGlowEffect(this.elements.rollingNumber);
         effectsManager.playConfetti();
@@ -380,7 +390,7 @@ class LuckyDrawApp {
         } else {
             // 所有奖项都已抽完
             this.state.allPrizesFinished = true;
-            this.elements.rollingNumber.textContent = '抽奖结束';
+            this.updateRollingNumber('抽奖结束', true);
             this.elements.btnStart.disabled = true;
             this.elements.btnStart.textContent = '已完成';
             audioManager.play('finish');
@@ -398,14 +408,14 @@ class LuckyDrawApp {
 
         if (allFinished) {
             this.state.allPrizesFinished = true;
-            this.elements.rollingNumber.textContent = '抽奖结束';
+            this.updateRollingNumber('抽奖结束', true);
             this.elements.btnStart.disabled = true;
             this.elements.btnStart.textContent = '已完成';
         }
     }
 
     /**
-     * 更新当前奖项显示
+     * 初始化中奖记录
      */
     updateCurrentPrizeDisplay() {
         const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
@@ -606,16 +616,32 @@ class LuckyDrawApp {
     }
 
     /**
-     * 确认重新开始抽奖（二次确认）
+     * 更新滚动数字显示
+     * @param {string|number} text - 要显示的文本或数字
+     * @param {boolean} isText - 是否为文本（非数字）
+     */
+    updateRollingNumber(text, isText = true) {
+        this.elements.rollingNumber.textContent = text;
+
+        // 移除所有状态类
+        this.elements.rollingNumber.classList.remove('rolling', 'winner', 'text-state');
+
+        if (isText) {
+            this.elements.rollingNumber.classList.add('text-state');
+        }
+    }
+
+    /**
+     * 确认重置抽奖（二次确认）
      */
     confirmRestart() {
         audioManager.play('button');
 
         if (this.state.allPrizesFinished) {
             // 如果抽奖已结束，直接重新开始
-            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重新开始抽奖吗？\n⚠️ 所有中奖记录将被清除！')) {
+            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！')) {
                 this.clearAllData();
-                alert('✅ 抽奖已重新开始！');
+                alert('✅ 抽奖已重置！');
             }
         } else {
             // 如果抽奖未结束，需要二次确认
@@ -623,14 +649,14 @@ class LuckyDrawApp {
             const currentWinners = this.state.winners[this.state.currentPrizeIndex];
             const remaining = currentPrize.count - currentWinners.length;
 
-            const message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n⚠️ 确定要重新开始抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n请再次确认是否继续？`;
+            const message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n⚠️ 确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n请再次确认是否继续？`;
 
             // 第一次确认
             if (confirm(message)) {
                 // 第二次确认（防止误操作）
-                if (confirm('⚠️ 警告：此操作不可撤销！\n\n您确定要删除所有中奖记录并重新开始抽奖吗？')) {
+                if (confirm('⚠️ 警告：此操作不可撤销！\n\n您确定要删除所有中奖记录并重置抽奖吗？')) {
                     this.clearAllData();
-                    alert('✅ 抽奖已重新开始！');
+                    alert('✅ 抽奖已重置！');
                 } else {
                     audioManager.play('button');
                 }
@@ -651,15 +677,6 @@ class LuckyDrawApp {
             document.exitFullscreen();
             this.elements.btnFullscreen.textContent = '全屏显示';
         }
-        audioManager.play('button');
-    }
-
-    /**
-     * 切换音效
-     */
-    toggleSound() {
-        const enabled = audioManager.toggle();
-        this.elements.btnSound.className = `btn-icon ${enabled ? 'sound-on' : 'sound-off'}`;
         audioManager.play('button');
     }
 
