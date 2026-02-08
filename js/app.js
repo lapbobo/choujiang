@@ -10,7 +10,6 @@ class LuckyDrawApp {
             minNumber: 1,
             maxNumber: 200,
             prizes: [
-                { name: '特等奖', count: 1 },
                 { name: '一等奖', count: 1 },
                 { name: '二等奖', count: 2 },
                 { name: '三等奖', count: 3 },
@@ -35,6 +34,7 @@ class LuckyDrawApp {
             btnStart: document.getElementById('btn-start'),
             btnSettings: document.getElementById('btn-settings'),
             btnFullscreen: document.getElementById('btn-fullscreen'),
+            btnRestart: document.getElementById('btn-restart'),
             btnSound: document.getElementById('btn-sound'),
             btnExport: document.getElementById('btn-export'),
             prizeBoard: document.getElementById('prize-board'),
@@ -122,7 +122,6 @@ class LuckyDrawApp {
             minNumber: 1,
             maxNumber: 200,
             prizes: [
-                { name: '特等奖', count: 1 },
                 { name: '一等奖', count: 1 },
                 { name: '二等奖', count: 2 },
                 { name: '三等奖', count: 3 },
@@ -232,6 +231,9 @@ class LuckyDrawApp {
 
         // 全屏按钮
         this.elements.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
+
+        // 重新开始按钮
+        this.elements.btnRestart.addEventListener('click', () => this.confirmRestart());
 
         // 音效按钮
         this.elements.btnSound.addEventListener('click', () => this.toggleSound());
@@ -420,18 +422,14 @@ class LuckyDrawApp {
     renderPrizeBoard() {
         this.elements.prizeBoard.innerHTML = '';
 
-        // 创建特等奖和其他奖项的容器
-        const grandPrizeContainer = document.createElement('div');
-        grandPrizeContainer.className = 'grand-prize-container';
-        
-        const regularPrizesContainer = document.createElement('div');
-        regularPrizesContainer.className = 'prize-board-row';
+        // 创建奖项容器
+        const prizesContainer = document.createElement('div');
+        prizesContainer.className = 'prize-board-row';
 
         // 遍历奖项
         this.config.prizes.forEach((prize, index) => {
             const prizeItem = document.createElement('div');
             prizeItem.className = 'prize-item';
-            prizeItem.dataset.prizeType = prize.name;
             prizeItem.dataset.prizeIndex = index;
 
             if (index === this.state.currentPrizeIndex && !this.state.allPrizesFinished) {
@@ -451,23 +449,11 @@ class LuckyDrawApp {
                 </div>
             `;
 
-            // 判断是否为特等奖
-            if (prize.name.includes('特等')) {
-                grandPrizeContainer.appendChild(prizeItem);
-            } else {
-                regularPrizesContainer.appendChild(prizeItem);
-            }
+            prizesContainer.appendChild(prizeItem);
         });
 
-        // 先添加特等奖
-        if (grandPrizeContainer.children.length > 0) {
-            this.elements.prizeBoard.appendChild(grandPrizeContainer);
-        }
-
-        // 再添加其他奖项
-        if (regularPrizesContainer.children.length > 0) {
-            this.elements.prizeBoard.appendChild(regularPrizesContainer);
-        }
+        // 添加奖项容器
+        this.elements.prizeBoard.appendChild(prizesContainer);
     }
 
     /**
@@ -616,6 +602,39 @@ class LuckyDrawApp {
             this.elements.maxNumberInput.value = this.config.maxNumber;
             this.renderPrizeConfigList();
             audioManager.play('button');
+        }
+    }
+
+    /**
+     * 确认重新开始抽奖（二次确认）
+     */
+    confirmRestart() {
+        audioManager.play('button');
+
+        if (this.state.allPrizesFinished) {
+            // 如果抽奖已结束，直接重新开始
+            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重新开始抽奖吗？\n⚠️ 所有中奖记录将被清除！')) {
+                this.clearAllData();
+                alert('✅ 抽奖已重新开始！');
+            }
+        } else {
+            // 如果抽奖未结束，需要二次确认
+            const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
+            const currentWinners = this.state.winners[this.state.currentPrizeIndex];
+            const remaining = currentPrize.count - currentWinners.length;
+
+            const message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n⚠️ 确定要重新开始抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n请再次确认是否继续？`;
+
+            // 第一次确认
+            if (confirm(message)) {
+                // 第二次确认（防止误操作）
+                if (confirm('⚠️ 警告：此操作不可撤销！\n\n您确定要删除所有中奖记录并重新开始抽奖吗？')) {
+                    this.clearAllData();
+                    alert('✅ 抽奖已重新开始！');
+                } else {
+                    audioManager.play('button');
+                }
+            }
         }
     }
 

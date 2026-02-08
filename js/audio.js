@@ -67,7 +67,7 @@ class AudioManager {
     }
 
     /**
-     * 按钮点击音效
+     * 按钮点击音效（清脆悦耳的气泡声）
      */
     playButtonSound(ctx, now) {
         const oscillator = ctx.createOscillator();
@@ -77,91 +77,96 @@ class AudioManager {
         gainNode.connect(ctx.destination);
 
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(800, now);
-        oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.1);
+        oscillator.frequency.setValueAtTime(880, now); // A5
+        oscillator.frequency.exponentialRampToValueAtTime(1108, now + 0.05); // C#6
 
-        gainNode.gain.setValueAtTime(0.3, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
 
         oscillator.start(now);
-        oscillator.stop(now + 0.1);
+        oscillator.stop(now + 0.15);
     }
 
     /**
-     * 开始抽奖音效（引擎启动声）
+     * 开始抽奖音效（升序和弦）
      */
     playStartSound(ctx, now) {
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
+        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 (C major chord)
 
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
+        notes.forEach((freq, index) => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
 
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(100, now);
-        oscillator.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
 
-        gainNode.gain.setValueAtTime(0.2, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, now + index * 0.1);
 
-        oscillator.start(now);
-        oscillator.stop(now + 0.3);
+            gainNode.gain.setValueAtTime(0, now + index * 0.1);
+            gainNode.gain.linearRampToValueAtTime(0.12, now + index * 0.1 + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.4);
+
+            oscillator.start(now + index * 0.1);
+            oscillator.stop(now + index * 0.1 + 0.4);
+        });
     }
 
     /**
-     * 滚动抽奖音效（机械齿轮快速转动声）
+     * 滚动抽奖音效（轻快的滴答声）
      */
     playRollingSound(ctx, now) {
         const oscillator = ctx.createOscillator();
         const gainNode = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
 
-        oscillator.connect(gainNode);
+        oscillator.connect(filter);
+        filter.connect(gainNode);
         gainNode.connect(ctx.destination);
 
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(200, now);
-        oscillator.frequency.setValueAtTime(300, now + 0.05);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1200, now);
 
-        gainNode.gain.setValueAtTime(0.1, now);
-        gainNode.gain.setValueAtTime(0.01, now + 0.1);
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2000, now);
+        filter.frequency.exponentialRampToValueAtTime(500, now + 0.05);
+
+        gainNode.gain.setValueAtTime(0.08, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
 
         oscillator.start(now);
-        oscillator.stop(now + 0.1);
+        oscillator.stop(now + 0.05);
     }
 
     /**
-     * 中奖音效（礼炮/欢呼声）
+     * 中奖音效（愉悦的庆祝音效）
      */
     playWinSound(ctx, now) {
-        // 1. 礼炮音效
-        this.playFireworkSound(ctx, now);
+        // 1. 播放喜庆的和弦
+        const chord = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 (C major chord with octave)
 
-        // 2. 欢呼声（模拟）
+        chord.forEach((freq, index) => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, now + index * 0.03);
+
+            gainNode.gain.setValueAtTime(0, now + index * 0.03);
+            gainNode.gain.linearRampToValueAtTime(0.15, now + index * 0.03 + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + index * 0.03 + 0.6);
+
+            oscillator.start(now + index * 0.03);
+            oscillator.stop(now + index * 0.03 + 0.6);
+        });
+
+        // 2. 延迟播放欢呼声
         setTimeout(() => {
-            this.playCheerSound(ctx, now + 0.5);
+            this.playCheerSound(ctx, now + 0.4);
         }, 200);
-    }
-
-    /**
-     * 礼炮音效
-     */
-    playFireworkSound(ctx, now) {
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(150, now);
-        oscillator.frequency.exponentialRampToValueAtTime(600, now + 0.2);
-        oscillator.frequency.exponentialRampToValueAtTime(200, now + 0.4);
-
-        gainNode.gain.setValueAtTime(0.4, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-
-        oscillator.start(now);
-        oscillator.stop(now + 0.5);
     }
 
     /**
@@ -169,7 +174,7 @@ class AudioManager {
      */
     playCheerSound(ctx, now) {
         // 创建多个振荡器模拟人群欢呼声
-        const voices = 5;
+        const voices = 8;
         for (let i = 0; i < voices; i++) {
             const oscillator = ctx.createOscillator();
             const gainNode = ctx.createGain();
@@ -180,20 +185,22 @@ class AudioManager {
             gainNode.connect(ctx.destination);
 
             oscillator.type = 'sine';
-            const baseFreq = 300 + Math.random() * 200;
+            const baseFreq = 400 + Math.random() * 300;
             oscillator.frequency.setValueAtTime(baseFreq, now);
-            oscillator.frequency.linearRampToValueAtTime(baseFreq + 100, now + 0.3);
-            oscillator.frequency.linearRampToValueAtTime(baseFreq - 50, now + 0.6);
+            oscillator.frequency.linearRampToValueAtTime(baseFreq + 150, now + 0.25);
+            oscillator.frequency.linearRampToValueAtTime(baseFreq - 80, now + 0.5);
 
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1000, now);
+            filter.frequency.setValueAtTime(1200, now);
+            filter.frequency.linearRampToValueAtTime(800, now + 0.5);
 
-            gainNode.gain.setValueAtTime(0.05, now);
-            gainNode.gain.linearRampToValueAtTime(0.08, now + 0.2);
-            gainNode.gain.linearRampToValueAtTime(0.01, now + 0.6);
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.04, now + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0.06, now + 0.2);
+            gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
 
             oscillator.start(now);
-            oscillator.stop(now + 0.6);
+            oscillator.stop(now + 0.5);
         }
     }
 
