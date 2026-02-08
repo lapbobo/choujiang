@@ -23,7 +23,7 @@ class LuckyDrawApp {
             isRunning: false,
             currentPrizeIndex: 0,
             prizePool: [],
-            winners: {},
+            winners: [],
             allPrizesFinished: false
         };
 
@@ -69,6 +69,9 @@ class LuckyDrawApp {
         // 初始化中奖记录
         this.initWinners();
 
+        // 初始化滚动数字显示
+        this.elements.rollingNumber.textContent = '准备开始';
+
         // 渲染奖项列表
         this.renderPrizeBoard();
 
@@ -80,6 +83,14 @@ class LuckyDrawApp {
 
         // 如果所有奖项都已抽完，显示结束状态
         this.checkAllPrizesFinished();
+
+        console.log('App initialized', {
+            config: this.config,
+            prizes: this.config.prizes.length,
+            winners: this.state.winners,
+            currentPrizeIndex: this.state.currentPrizeIndex,
+            prizePoolSize: this.state.prizePool.length
+        });
     }
 
     /**
@@ -138,21 +149,37 @@ class LuckyDrawApp {
         const savedWinners = localStorage.getItem('luckyDrawWinners');
         if (savedWinners) {
             try {
-                this.state.winners = JSON.parse(savedWinners);
-                // 从奖池中移除已中奖号码
-                this.state.winners.forEach((winnerList, prizeIndex) => {
-                    winnerList.forEach(winner => {
-                        const index = this.state.prizePool.indexOf(winner);
-                        if (index !== -1) {
-                            this.state.prizePool.splice(index, 1);
-                        }
+                const parsedWinners = JSON.parse(savedWinners);
+                // 检查 winners 数组长度是否与配置一致
+                if (Array.isArray(parsedWinners) && parsedWinners.length === this.config.prizes.length) {
+                    this.state.winners = parsedWinners;
+                    // 从奖池中移除已中奖号码
+                    this.state.winners.forEach((winnerList) => {
+                        winnerList.forEach(winner => {
+                            const index = this.state.prizePool.indexOf(winner);
+                            if (index !== -1) {
+                                this.state.prizePool.splice(index, 1);
+                            }
+                        });
                     });
-                });
-                // 计算当前应该抽哪个奖项
-                this.state.currentPrizeIndex = this.state.winners.length;
+                    // 计算当前应该抽哪个奖项
+                    this.state.currentPrizeIndex = this.state.winners.findIndex((winnerList, index) => {
+                        return winnerList.length < this.config.prizes[index].count;
+                    });
+                    if (this.state.currentPrizeIndex === -1) {
+                        this.state.currentPrizeIndex = 0;
+                        this.state.allPrizesFinished = true;
+                    }
+                } else {
+                    // 如果数据不一致，重新初始化并清除旧数据
+                    console.warn('Winners data inconsistent, resetting');
+                    this.state.winners = this.config.prizes.map(() => []);
+                    localStorage.removeItem('luckyDrawWinners');
+                }
             } catch (e) {
                 console.error('Failed to load winners:', e);
                 this.state.winners = this.config.prizes.map(() => []);
+                localStorage.removeItem('luckyDrawWinners');
             }
         } else {
             this.state.winners = this.config.prizes.map(() => []);
@@ -177,6 +204,10 @@ class LuckyDrawApp {
         this.initWinners();
         this.state.currentPrizeIndex = 0;
         this.state.allPrizesFinished = false;
+        this.state.isRunning = false;
+        this.elements.rollingNumber.textContent = '准备开始';
+        this.elements.btnStart.disabled = false;
+        this.elements.btnStart.textContent = '开始抽奖';
         this.renderPrizeBoard();
         this.updateCurrentPrizeDisplay();
     }
@@ -250,11 +281,26 @@ class LuckyDrawApp {
     startDraw() {
         if (this.state.isRunning) return;
 
+        console.log('Starting draw', {
+            currentPrizeIndex: this.state.currentPrizeIndex,
+            prizePoolSize: this.state.prizePool.length,
+            isRunning: this.state.isRunning,
+            allFinished: this.state.allPrizesFinished
+        });
+
         // 检查当前奖项是否还有剩余
         const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
         const currentWinners = this.state.winners[this.state.currentPrizeIndex];
+        
+        console.log('Current prize check', {
+            prize: currentPrize,
+            winnersCount: currentWinners.length,
+            remaining: currentPrize.count - currentWinners.length
+        });
+
         if (currentWinners.length >= currentPrize.count) {
             // 当前奖项已抽完，切换到下一个奖项
+            console.log('Current prize finished, moving to next');
             this.nextPrize();
             return;
         }
