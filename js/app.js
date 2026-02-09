@@ -17,7 +17,7 @@ class LuckyDrawApp {
                 { name: '幸运奖', count: 5 }
             ]
         };
-        
+
         // 状态
         this.state = {
             isRunning: false,
@@ -26,7 +26,7 @@ class LuckyDrawApp {
             winners: [],
             allPrizesFinished: false
         };
-        
+
         // DOM 元素
         this.elements = {
             mainTitle: document.getElementById('main-title'),
@@ -47,48 +47,58 @@ class LuckyDrawApp {
             prizeConfigList: document.getElementById('prize-config-list'),
             eventTitleInput: document.getElementById('event-title'),
             minNumberInput: document.getElementById('min-number'),
-            maxNumberInput: document.getElementById('max-number')
+            maxNumberInput: document.getElementById('max-number'),
+            // 确认对话框
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmTitle: document.getElementById('confirm-title'),
+            confirmMessage: document.getElementById('confirm-message'),
+            btnConfirmOk: document.getElementById('btn-confirm-ok'),
+            btnConfirmCancel: document.getElementById('btn-confirm-cancel'),
+            btnCloseConfirm: document.getElementById('btn-close-confirm')
         };
-        
+
+        // 确认对话框回调
+        this.confirmCallback = null;
+
         // 滚动动画相关
         this.rollingInterval = null;
         this.rollingSpeed = 50;
-        
+
         // 初始化
         this.init();
     }
-    
+
     /**
      * 初始化应用
      */
     init() {
         // 加载保存的配置
         this.loadConfig();
-        
+
         // 初始化奖池
         this.initPrizePool();
-        
+
         // 初始化中奖记录
         this.initWinners();
-        
+
         // 更新主标题
         this.updateMainTitle();
-        
+
         // 初始化滚动数字显示
         this.updateRollingNumber('准备开始', true);
-        
+
         // 更新当前奖项显示
         this.updateCurrentPrizeDisplay();
-        
+
         // 渲染奖项列表
         this.renderPrizeBoard();
-        
+
         // 绑定事件
         this.bindEvents();
-        
+
         // 如果所有奖项都已抽完，显示结束状态
         this.checkAllPrizesFinished();
-        
+
         console.log('App initialized', {
             config: this.config,
             prizes: this.config.prizes.length,
@@ -97,7 +107,7 @@ class LuckyDrawApp {
             prizePoolSize: this.state.prizePool.length
         });
     }
-    
+
     /**
      * 加载保存的配置
      */
@@ -111,14 +121,14 @@ class LuckyDrawApp {
             }
         }
     }
-    
+
     /**
      * 保存配置
      */
     saveConfig() {
         localStorage.setItem('luckyDrawConfig', JSON.stringify(this.config));
     }
-    
+
     /**
      * 重置为默认配置
      */
@@ -136,7 +146,7 @@ class LuckyDrawApp {
         };
         this.saveConfig();
     }
-    
+
     /**
      * 初始化奖池
      */
@@ -146,7 +156,7 @@ class LuckyDrawApp {
             this.state.prizePool.push(i);
         }
     }
-    
+
     /**
      * 初始化中奖记录
      */
@@ -190,14 +200,14 @@ class LuckyDrawApp {
             this.state.winners = this.config.prizes.map(() => []);
         }
     }
-    
+
     /**
      * 保存中奖记录
      */
     saveWinners() {
         localStorage.setItem('luckyDrawWinners', JSON.stringify(this.state.winners));
     }
-    
+
     /**
      * 清除所有数据
      */
@@ -216,7 +226,7 @@ class LuckyDrawApp {
         this.renderPrizeBoard();
         this.updateCurrentPrizeDisplay();
     }
-    
+
     /**
      * 只重置抽奖数据（中奖记录），保持奖项配置不变
      */
@@ -233,14 +243,14 @@ class LuckyDrawApp {
         this.renderPrizeBoard();
         this.updateCurrentPrizeDisplay();
     }
-    
+
     /**
      * 绑定事件
      */
     bindEvents() {
         // 开始/停止按钮
         this.elements.btnStart.addEventListener('click', () => this.toggleDraw());
-        
+
         // 空格键控制
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
@@ -248,28 +258,28 @@ class LuckyDrawApp {
                 this.toggleDraw();
             }
         });
-        
+
         // 设置按钮
         this.elements.btnSettings.addEventListener('click', () => this.openSettingsModal());
-        
+
         // 全屏按钮
         this.elements.btnFullscreen.addEventListener('click', () => this.toggleFullscreen());
-        
+
         // 重新开始按钮
         this.elements.btnRestart.addEventListener('click', () => this.confirmRestart());
-        
+
         // 导出图片按钮
         this.elements.btnExport.addEventListener('click', () => this.exportAsImage());
-        
+
         // 保存设置
         this.elements.btnSaveSettings.addEventListener('click', () => this.saveSettings());
-        
+
         // 重置默认设置
         this.elements.btnResetDefault.addEventListener('click', () => this.resetDefaultSettings());
-        
+
         // 添加奖项
         this.elements.btnAddPrize.addEventListener('click', () => this.addPrizeConfig());
-        
+
         // 主标题编辑
         this.elements.mainTitle.addEventListener('input', (e) => {
             const text = e.target.textContent.trim();
@@ -277,15 +287,28 @@ class LuckyDrawApp {
                 e.target.textContent = text.substring(0, 10);
             }
         });
-        
+
         this.elements.mainTitle.addEventListener('blur', (e) => {
             const text = e.target.textContent.trim() || '幸运大抽奖';
             this.config.eventTitle = text.substring(0, 10);
             e.target.textContent = this.config.eventTitle;
             this.saveConfig();
         });
+
+        // 确认对话框事件
+        this.elements.btnConfirmOk.addEventListener('click', () => {
+            this.closeConfirmModal(true);
+        });
+
+        this.elements.btnConfirmCancel.addEventListener('click', () => {
+            this.closeConfirmModal(false);
+        });
+
+        this.elements.btnCloseConfirm.addEventListener('click', () => {
+            this.closeConfirmModal(false);
+        });
     }
-    
+
     /**
      * 开始/停止抽奖
      */
@@ -293,56 +316,56 @@ class LuckyDrawApp {
         if (this.state.allPrizesFinished) {
             return;
         }
-        
+
         if (this.state.isRunning) {
             this.stopDraw();
         } else {
             this.startDraw();
         }
     }
-    
+
     /**
      * 开始抽奖
      */
     startDraw() {
         if (this.state.isRunning) return;
-        
+
         console.log('Starting draw', {
             currentPrizeIndex: this.state.currentPrizeIndex,
             prizePoolSize: this.state.prizePool.length,
             isRunning: this.state.isRunning,
             allFinished: this.state.allPrizesFinished
         });
-        
+
         // 检查当前奖项是否还有剩余
         const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
         const currentWinners = this.state.winners[this.state.currentPrizeIndex];
-        
+
         console.log('Current prize check', {
             prize: currentPrize,
             winnersCount: currentWinners.length,
             remaining: currentPrize.count - currentWinners.length
         });
-        
+
         if (currentWinners.length >= currentPrize.count) {
             this.nextPrize();
             return;
         }
-        
+
         // 检查奖池是否为空
         if (this.state.prizePool.length === 0) {
             alert('所有号码已中奖！');
             return;
         }
-        
+
         this.state.isRunning = true;
         this.elements.btnStart.textContent = '停止';
         audioManager.play('start');
-        
+
         // 添加滚动状态类（移除过渡效果）
         this.elements.rollingNumber.classList.remove('text-state', 'winner');
         this.elements.rollingNumber.classList.add('rolling');
-        
+
         // 开始滚动数字
         this.rollingInterval = setInterval(() => {
             const randomIndex = Math.floor(Math.random() * this.state.prizePool.length);
@@ -351,30 +374,30 @@ class LuckyDrawApp {
             audioManager.play('rolling');
         }, this.rollingSpeed);
     }
-    
+
     /**
      * 停止抽奖
      */
     stopDraw() {
         if (!this.state.isRunning) return;
-        
+
         this.state.isRunning = false;
         this.elements.btnStart.textContent = '开始抽奖';
-        
+
         // 停止滚动
         clearInterval(this.rollingInterval);
-        
+
         // 随机选择一个中奖号码
         const randomIndex = Math.floor(Math.random() * this.state.prizePool.length);
         const winner = this.state.prizePool[randomIndex];
-        
+
         // 从奖池中移除
         this.state.prizePool.splice(randomIndex, 1);
-        
+
         // 记录中奖号码
         this.state.winners[this.state.currentPrizeIndex].push(winner);
         this.saveWinners();
-        
+
         // 更新 UI
         this.elements.rollingNumber.textContent = winner;
         this.elements.rollingNumber.classList.remove('rolling');
@@ -382,20 +405,20 @@ class LuckyDrawApp {
         effectsManager.addGlowEffect(this.elements.rollingNumber);
         effectsManager.playConfetti();
         audioManager.play('win');
-        
+
         // 移除中奖动画类
         setTimeout(() => {
             this.elements.rollingNumber.classList.remove('winner');
         }, 500);
-        
+
         // 更新奖项列表
         this.renderPrizeBoard();
         this.updateCurrentPrizeDisplay();
-        
+
         // 检查是否所有奖项都已抽完
         this.checkAllPrizesFinished();
     }
-    
+
     /**
      * 切换到下一个奖项
      */
@@ -405,7 +428,7 @@ class LuckyDrawApp {
             const winners = this.state.winners[index];
             return winners.length < prize.count;
         });
-        
+
         if (!hasUnfinishedPrizes) {
             // 所有奖项都已抽完
             this.state.allPrizesFinished = true;
@@ -416,7 +439,7 @@ class LuckyDrawApp {
             effectsManager.playConfetti(5000);
             return;
         }
-        
+
         // 找到下一个未完成的奖项
         for (let i = 0; i < this.config.prizes.length; i++) {
             const prize = this.config.prizes[i];
@@ -429,7 +452,7 @@ class LuckyDrawApp {
             }
         }
     }
-    
+
     /**
      * 检查所有奖项是否都已抽完
      */
@@ -437,7 +460,7 @@ class LuckyDrawApp {
         const allFinished = this.config.prizes.every((prize, index) => {
             return this.state.winners[index].length >= prize.count;
         });
-        
+
         if (allFinished) {
             this.state.allPrizesFinished = true;
             this.updateRollingNumber('抽奖结束', true);
@@ -445,7 +468,7 @@ class LuckyDrawApp {
             this.elements.btnStart.textContent = '已完成';
         }
     }
-    
+
     /**
      * 更新当前奖项显示
      */
@@ -453,18 +476,18 @@ class LuckyDrawApp {
         const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
         const currentWinners = this.state.winners[this.state.currentPrizeIndex];
         const remaining = currentPrize.count - currentWinners.length;
-        
+
         this.elements.currentPrizeName.textContent = currentPrize.name;
         this.elements.currentPrizeCount.textContent = `剩余 ${remaining} 个`;
     }
-    
+
     /**
      * 更新主标题
      */
     updateMainTitle() {
         this.elements.mainTitle.textContent = this.config.eventTitle || '幸运大抽奖';
     }
-    
+
     /**
      * 更新滚动数字显示
      * @param {string|number} text - 要显示的文本或数字
@@ -472,49 +495,49 @@ class LuckyDrawApp {
      */
     updateRollingNumber(text, isText = true) {
         this.elements.rollingNumber.textContent = text;
-        
+
         // 移除所有状态类
         this.elements.rollingNumber.classList.remove('rolling', 'winner', 'text-state');
-        
+
         if (isText) {
             this.elements.rollingNumber.classList.add('text-state');
         }
     }
-    
+
     /**
      * 渲染奖项列表
      */
     renderPrizeBoard() {
         this.elements.prizeBoard.innerHTML = '';
-        
+
         // 创建奖项容器
         const prizesContainer = document.createElement('div');
         prizesContainer.className = 'prize-board-row';
-        
+
         // 遍历奖项
         this.config.prizes.forEach((prize, index) => {
             const prizeItem = document.createElement('div');
             prizeItem.className = 'prize-item';
             prizeItem.dataset.prizeIndex = index;
-            
+
             // 添加可点击样式（如果奖项未完成）
             const winners = this.state.winners[index];
             const remaining = prize.count - winners.length;
-            
+
             if (remaining > 0) {
                 prizeItem.classList.add('clickable');
                 prizeItem.style.cursor = 'pointer';
-                
+
                 // 点击事件
                 prizeItem.addEventListener('click', () => {
                     this.selectPrize(index);
                 });
             }
-            
+
             if (index === this.state.currentPrizeIndex && !this.state.allPrizesFinished) {
                 prizeItem.classList.add('active');
             }
-            
+
             prizeItem.innerHTML = `
                 <div class="prize-item-header">
                     <span class="prize-item-name">${prize.name}</span>
@@ -524,14 +547,14 @@ class LuckyDrawApp {
                     ${winners.map(winner => `<span class="winner-number" data-prize-index="${index}">${winner}</span>`).join('')}
                 </div>
             `;
-            
+
             prizesContainer.appendChild(prizeItem);
         });
-        
+
         // 添加奖项容器
         this.elements.prizeBoard.appendChild(prizesContainer);
     }
-    
+
     /**
      * 选择奖项
      * @param {number} index - 奖项索引
@@ -542,24 +565,24 @@ class LuckyDrawApp {
             alert('请先停止抽奖后再切换奖项！');
             return;
         }
-        
+
         // 检查奖项是否还有剩余
         const prize = this.config.prizes[index];
         const winners = this.state.winners[index];
         const remaining = prize.count - winners.length;
-        
+
         if (remaining === 0) {
             alert(`「${prize.name}」已全部抽取完毕！`);
             return;
         }
-        
+
         // 切换奖项
         this.state.currentPrizeIndex = index;
         this.updateCurrentPrizeDisplay();
         this.renderPrizeBoard();
         audioManager.play('button');
     }
-    
+
     /**
      * 打开设置弹窗
      */
@@ -568,15 +591,15 @@ class LuckyDrawApp {
         this.elements.eventTitleInput.value = this.config.eventTitle;
         this.elements.minNumberInput.value = this.config.minNumber;
         this.elements.maxNumberInput.value = this.config.maxNumber;
-        
+
         // 渲染奖项配置列表
         this.renderPrizeConfigList();
-        
+
         // 显示弹窗
         this.elements.settingsModal.classList.add('show');
         audioManager.play('button');
     }
-    
+
     /**
      * 关闭设置弹窗
      */
@@ -584,13 +607,13 @@ class LuckyDrawApp {
         this.elements.settingsModal.classList.remove('show');
         audioManager.play('button');
     }
-    
+
     /**
      * 渲染奖项配置列表
      */
     renderPrizeConfigList() {
         this.elements.prizeConfigList.innerHTML = '';
-        
+
         this.config.prizes.forEach((prize, index) => {
             const configItem = document.createElement('div');
             configItem.className = 'prize-config-item';
@@ -601,7 +624,7 @@ class LuckyDrawApp {
             `;
             this.elements.prizeConfigList.appendChild(configItem);
         });
-        
+
         // 绑定删除事件
         document.querySelectorAll('.btn-remove').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -610,7 +633,7 @@ class LuckyDrawApp {
             });
         });
     }
-    
+
     /**
      * 添加奖项配置
      */
@@ -623,20 +646,20 @@ class LuckyDrawApp {
         this.renderPrizeConfigList();
         audioManager.play('button');
     }
-    
+
     /**
      * 移除奖项配置
      * @param {number} index - 奖项索引
      */
     removePrizeConfig(index) {
         if (this.config.prizes.length <= 1) return;
-        
+
         this.config.prizes.splice(index, 1);
         this.state.winners.splice(index, 1);
         this.renderPrizeConfigList();
         audioManager.play('button');
     }
-    
+
     /**
      * 保存设置
      */
@@ -644,35 +667,35 @@ class LuckyDrawApp {
         // 保存主标题
         const eventTitle = this.elements.eventTitleInput.value.trim() || '幸运大抽奖';
         this.config.eventTitle = eventTitle.substring(0, 10);
-        
+
         const minNumber = parseInt(this.elements.minNumberInput.value);
         const maxNumber = parseInt(this.elements.maxNumberInput.value);
-        
+
         // 验证输入
         if (minNumber >= maxNumber) {
             alert('最小号码必须小于最大号码！');
             return;
         }
-        
+
         if (maxNumber - minNumber > 10000) {
             alert('号码范围过大，请缩小范围！');
             return;
         }
-        
+
         // 获取奖项配置
         const prizeNameInputs = document.querySelectorAll('.prize-name-input');
         const prizeCountInputs = document.querySelectorAll('.prize-count-input');
         const newPrizes = [];
-        
+
         prizeNameInputs.forEach((input, index) => {
             const name = input.value.trim() || `奖项${index + 1}`;
             const count = parseInt(prizeCountInputs[index].value) || 1;
             newPrizes.push({ name, count });
         });
-        
+
         // 检查奖项数量是否变化
         const prizesCountChanged = this.config.prizes.length !== newPrizes.length;
-        
+
         // 检查奖项配置是否需要清除数据
         let needClearData = false;
         if (prizesCountChanged) {
@@ -686,16 +709,16 @@ class LuckyDrawApp {
                 }
             }
         }
-        
+
         // 更新配置
         this.config.minNumber = minNumber;
         this.config.maxNumber = maxNumber;
         this.config.prizes = newPrizes;
         this.saveConfig();
-        
+
         // 更新主标题显示
         this.updateMainTitle();
-        
+
         // 如果需要清除数据
         if (needClearData) {
             if (confirm('奖项配置已更改，是否清除所有抽奖结果？')) {
@@ -715,11 +738,11 @@ class LuckyDrawApp {
             this.renderPrizeBoard();
             this.updateCurrentPrizeDisplay();
         }
-        
+
         this.closeSettingsModal();
         audioManager.play('button');
     }
-    
+
     /**
      * 重置为默认设置
      */
@@ -732,40 +755,73 @@ class LuckyDrawApp {
             audioManager.play('button');
         }
     }
-    
+
     /**
      * 确认重置抽奖（二次确认）
      */
     confirmRestart() {
         audioManager.play('button');
-        
+
+        let message;
+        let title;
+
         if (this.state.allPrizesFinished) {
-            // 如果抽奖已结束，直接重置抽奖
-            if (confirm('🎉 恭喜！所有奖项已抽取完毕！\n\n确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n奖项配置将保持不变。')) {
-                this.resetDrawData();
-                alert('✅ 抽奖已重置！');
-            }
+            title = '🎉 抽奖已完成';
+            message = '恭喜！所有奖项已抽取完毕！\n\n确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n奖项配置将保持不变。';
         } else {
-            // 如果抽奖未结束，需要二次确认
             const currentPrize = this.config.prizes[this.state.currentPrizeIndex];
             const currentWinners = this.state.winners[this.state.currentPrizeIndex];
             const remaining = currentPrize.count - currentWinners.length;
-            
-            const message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n⚠️ 确定要重置抽奖吗？\n⚠️ 所有中奖记录将被清除！\n\n奖项配置将保持不变。\n\n请再次确认是否继续？`;
-            
-            // 第一次确认
-            if (confirm(message)) {
-                // 第二次确认（防止误操作）
-                if (confirm('⚠️ 警告：此操作不可撤销！\n\n您确定要删除所有中奖记录并重置抽奖吗？\n\n奖项配置将保持不变。')) {
-                    this.resetDrawData();
-                    alert('✅ 抽奖已重置！');
-                } else {
-                    audioManager.play('button');
-                }
+
+            title = '⚠️ 抽奖重置';
+            message = `当前正在进行「${currentPrize.name}」抽奖\n已抽取 ${currentWinners.length} 个，剩余 ${remaining} 个\n\n确定要重置抽奖吗？\n所有中奖记录将被清除！\n\n奖项配置将保持不变。`;
+        }
+
+        this.showConfirmModal(title, message, (confirmed) => {
+            if (confirmed) {
+                this.resetDrawData();
+                this.showAlertModal('✅ 重置成功', '抽奖已重置，可以开始新一轮抽奖！');
             }
+        });
+    }
+
+    /**
+     * 显示自定义确认对话框
+     */
+    showConfirmModal(title, message, callback) {
+        this.elements.confirmTitle.textContent = title;
+        this.elements.confirmMessage.textContent = message;
+        this.confirmCallback = callback;
+        this.elements.confirmModal.classList.add('show');
+    }
+
+    /**
+     * 关闭确认对话框
+     */
+    closeConfirmModal(confirmed) {
+        this.elements.confirmModal.classList.remove('show');
+        audioManager.play('button');
+        if (this.confirmCallback) {
+            this.confirmCallback(confirmed);
+            this.confirmCallback = null;
         }
     }
-    
+
+    /**
+     * 显示提示对话框（只有确定按钮）
+     */
+    showAlertModal(title, message) {
+        this.elements.confirmTitle.textContent = title;
+        this.elements.confirmMessage.textContent = message;
+        this.elements.btnConfirmCancel.style.display = 'none';
+        this.elements.btnConfirmOk.textContent = '好的';
+        this.confirmCallback = () => {
+            this.elements.btnConfirmCancel.style.display = '';
+            this.elements.btnConfirmOk.textContent = '确定';
+        };
+        this.elements.confirmModal.classList.add('show');
+    }
+
     /**
      * 切换全屏
      */
@@ -781,7 +837,7 @@ class LuckyDrawApp {
         }
         audioManager.play('button');
     }
-    
+
     /**
      * 导出为图片
      */
@@ -789,25 +845,25 @@ class LuckyDrawApp {
         // 创建一个临时的 canvas 来渲染中奖名单
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
+
         // 设置画布大小
         canvas.width = 1200;
         canvas.height = 1800;
-        
+
         // 绘制背景
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         gradient.addColorStop(0, '#FF9A9E');
         gradient.addColorStop(1, '#FECFEF');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         // 绘制标题
         ctx.fillStyle = '#2D1B69';
         ctx.font = 'bold 56px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${this.config.eventTitle} - 中奖名单`, canvas.width / 2, 80);
-        
+
         // 定义奖项小球颜色
         const ballColors = [
             { bg: ['#FFD700', '#FFEC8B'], shadow: 'rgba(255, 215, 0, 0.4)', text: '#DC2626' },  // 一等奖：金色
@@ -815,36 +871,36 @@ class LuckyDrawApp {
             { bg: ['#CD7F32', '#DEB887'], shadow: 'rgba(205, 127, 50, 0.4)', text: '#DC2626' },  // 三等奖：铜色
             { bg: ['#FF6B6B', '#FF8E8E'], shadow: 'rgba(255, 107, 107, 0.4)', text: '#DC2626' }   // 幸运奖：红色
         ];
-        
+
         // 绘制奖项
         let y = 180;
         const ballRadius = 35;
         const ballSpacing = 80;
         const ballWidth = ballRadius * 2;
-        
+
         this.config.prizes.forEach((prize, index) => {
             const winners = this.state.winners[index];
             const colors = ballColors[index] || ballColors[3];
-            
+
             // 绘制奖项名称
             ctx.fillStyle = '#2D1B69';
             ctx.font = 'bold 32px Arial';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             ctx.fillText(`${prize.name} (${winners.length}/${prize.count})`, 100, y);
-            
+
             // 绘制中奖号码小球
             let x = 100;
             const startY = y + 50;
             let currentLineY = startY;
-            
+
             winners.forEach((winner, winnerIndex) => {
                 // 检查是否需要换行
                 if (x + ballWidth > canvas.width - 100) {
                     x = 100;
                     currentLineY += ballWidth + 15;
                 }
-                
+
                 // 绘制小球阴影
                 ctx.beginPath();
                 ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
@@ -854,7 +910,7 @@ class LuckyDrawApp {
                 ctx.shadowOffsetX = 0;
                 ctx.shadowOffsetY = 5;
                 ctx.fill();
-                
+
                 // 绘制小球背景（渐变）
                 const ballGradient = ctx.createRadialGradient(
                     x + ballRadius - 10, currentLineY + ballRadius - 10, 0,
@@ -862,13 +918,13 @@ class LuckyDrawApp {
                 );
                 ballGradient.addColorStop(0, colors.bg[1]);
                 ballGradient.addColorStop(1, colors.bg[0]);
-                
+
                 ctx.beginPath();
                 ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
                 ctx.fillStyle = ballGradient;
                 ctx.shadowColor = 'transparent';
                 ctx.fill();
-                
+
                 // 绘制高光效果
                 ctx.beginPath();
                 ctx.arc(x + ballRadius - 8, currentLineY + ballRadius - 8, 8, 0, Math.PI * 2);
@@ -876,33 +932,33 @@ class LuckyDrawApp {
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
                 ctx.shadowBlur = 8;
                 ctx.fill();
-                
+
                 // 绘制数字
                 ctx.fillStyle = colors.text;
                 ctx.font = 'bold 28px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(winner, x + ballRadius, currentLineY + ballRadius + 2);
-                
+
                 x += ballSpacing;
             });
-            
+
             y += currentLineY - startY + ballWidth + 40;
         });
-        
+
         // 添加水印
         ctx.fillStyle = 'rgba(45, 27, 105, 0.5)';
         ctx.font = '16px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText('Powered by Choujiang-Webapp', canvas.width / 2, canvas.height - 30);
-        
+
         // 下载图片
         const link = document.createElement('a');
         link.download = `中奖名单_${new Date().toLocaleDateString()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-        
+
         audioManager.play('button');
     }
 }

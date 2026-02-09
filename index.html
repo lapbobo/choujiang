@@ -21,7 +21,7 @@
             border-radius: 8px;
         }
     </style>
-    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 
 <body>
@@ -30,8 +30,8 @@
         <nav class="top-nav">
             <div class="nav-left">
                 <button id="btn-settings" class="btn-small">抽奖设置</button>
+                <button id="btn-restart" class="btn-small">抽奖重置</button>
                 <button id="btn-fullscreen" class="btn-small">全屏显示</button>
-                <button id="btn-restart" class="btn-small btn-danger">重置抽奖</button>
             </div>
         </nav>
 
@@ -112,6 +112,24 @@
             <div class="modal-footer">
                 <button id="btn-reset-default" class="btn-secondary">重置默认</button>
                 <button id="btn-save-settings" class="btn-primary">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义确认对话框 -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h2 id="confirm-title">确认操作</h2>
+                <button id="btn-close-confirm" class="btn-close">×</button>
+            </div>
+            <div class="modal-body confirm-body">
+                <div class="confirm-icon">⚠️</div>
+                <p id="confirm-message" class="confirm-message">确定要执行此操作吗？</p>
+            </div>
+            <div class="modal-footer confirm-footer">
+                <button id="btn-confirm-cancel" class="btn-secondary">取消</button>
+                <button id="btn-confirm-ok" class="btn-primary">确定</button>
             </div>
         </div>
     </div>

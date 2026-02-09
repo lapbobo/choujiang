@@ -129,15 +129,6 @@ body::before {
     height: 300px;
 }
 
-.btn-danger {
-    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-}
-
-.btn-danger:hover {
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
-}
-
 .btn-small:hover::before {
     width: 300px;
     height: 300px;
@@ -253,16 +244,16 @@ body::before {
 .rolling-section {
     background: var(--bg-white);
     border-radius: 20px;
-    padding: 20px 40px;
+    padding: 20px 40px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     box-shadow: var(--shadow-soft);
     flex-shrink: 0;
-    height: 320px;
+    height: 380px;
     box-sizing: border-box;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* 滚动数字显示区域 */
@@ -1025,6 +1016,44 @@ body::before {
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+/* 自定义确认对话框 */
+.confirm-modal-content {
+    max-width: 450px;
+    text-align: center;
+}
+
+.confirm-body {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.confirm-icon {
+    font-size: 64px;
+    line-height: 1;
+}
+
+.confirm-message {
+    font-size: 16px;
+    color: #4A5568;
+    line-height: 1.8;
+    white-space: pre-line;
+    text-align: center;
+    margin: 0;
+}
+
+.confirm-footer {
+    justify-content: center;
+    gap: 20px;
+}
+
+.confirm-footer button {
+    flex: 0 0 auto;
+    min-width: 120px;
 }
 
 /* 彩带画布 */
