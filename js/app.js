@@ -874,8 +874,8 @@ class LuckyDrawApp {
 
         // 绘制奖项 - 放大尺寸
         let y = 200;
-        const ballRadius = 45;  // 从35增加到45
-        const ballSpacing = 110; // 从80增加到110避免重叠
+        const ballRadius = 50;  // 进一步增大到50
+        const ballSpacing = 120; // 进一步增大到120避免重叠
         const ballWidth = ballRadius * 2;
 
         this.config.prizes.forEach((prize, index) => {
@@ -884,23 +884,23 @@ class LuckyDrawApp {
 
             // 绘制奖项名称 - 放大字体
             ctx.fillStyle = '#2D1B69';
-            ctx.font = 'bold 42px Arial';  // 从32px增加到42px
+            ctx.font = 'bold 48px Arial';  // 进一步增大到48px
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
             ctx.fillText(`${prize.name} (${winners.length}/${prize.count})`, 80, y);
 
-            // 绘制中奖号码小球
+            // 绘制中奖号码小球 - 大幅增加与标题的间距
             let x = 80;
-            const startY = y + 70;  // 从50增加到70，增加间距
+            const startY = y + 80;  // 增加到80，确保文字和小球不重叠
             let currentLineY = startY;
 
             winners.forEach((winner, winnerIndex) => {
                 // 检查是否需要换行
                 if (x + ballWidth > canvas.width - 80) {
                     x = 80;
-                    currentLineY += ballWidth + 25;  // 从15增加到25
+                    currentLineY += ballWidth + 30;  // 增加到30
                 }
 
                 // 绘制小球阴影
@@ -930,7 +930,7 @@ class LuckyDrawApp {
 
                 // 绘制高光效果
                 ctx.beginPath();
-                ctx.arc(x + ballRadius - 12, currentLineY + ballRadius - 12, 10, 0, Math.PI * 2);
+                ctx.arc(x + ballRadius - 15, currentLineY + ballRadius - 15, 12, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
                 ctx.shadowBlur = 8;
@@ -938,7 +938,7 @@ class LuckyDrawApp {
 
                 // 绘制数字 - 放大字体
                 ctx.fillStyle = colors.text;
-                ctx.font = 'bold 36px Arial';  // 从28px增加到36px
+                ctx.font = 'bold 40px Arial';  // 进一步增大到40px
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.shadowColor = 'transparent';
@@ -948,7 +948,9 @@ class LuckyDrawApp {
                 x += ballSpacing;
             });
 
-            y += currentLineY - startY + ballWidth + 60;  // 从40增加到60
+            // 计算下一个奖项的 y 位置，确保充足的间距
+            const ballsHeight = winners.length > 0 ? (currentLineY - startY + ballWidth) : 0;
+            y += 80 + ballsHeight + 40;  // 标题高度(80) + 小球高度 + 间距(40)
         });
 
         // 获取当前时间，精确到秒
