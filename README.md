@@ -134,8 +134,8 @@ MIT License
 
 如有问题或建议，请通过以下方式联系我们：
 
-- 邮箱：support@example.com
-- 微信：choujiang-webapp
+- 邮箱：lapbobo@qq.com
+- 微信：yeefei618
 
 ---
 
