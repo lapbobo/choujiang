@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>幸运大抽奖 - Lucky Draw Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
     <style>
         .editable-title:empty:before {
             content: attr(data-placeholder);
             color: rgba(255, 255, 255, 0.5);
         }
+
         .editable-title:focus {
             outline: 2px solid rgba(168, 85, 247, 0.5);
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
         }
     </style>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
 </head>
+
 <body>
     <div class="container">
         <!-- 顶部导航栏 -->
@@ -32,7 +36,8 @@
         </nav>
 
         <!-- 主标题 -->
-        <h1 id="main-title" class="main-title editable-title" contenteditable="true" data-placeholder="幸运大抽奖" maxlength="10">幸运大抽奖</h1>
+        <h1 id="main-title" class="main-title editable-title" contenteditable="true" data-placeholder="幸运大抽奖"
+            maxlength="10">幸运大抽奖</h1>
 
         <!-- 主内容区域 -->
         <div class="main-content">
@@ -42,11 +47,13 @@
                     <span id="current-prize-name">一等奖</span>
                     <span id="current-prize-count" class="prize-count">剩余 1 个</span>
                 </div>
-                <div class="rolling-main">
+                <div class="rolling-display">
                     <div class="rolling-number-container">
                         <div id="rolling-number" class="rolling-number">准备开始</div>
                     </div>
-                    <button id="btn-start" class="btn-primary btn-large">开始抽奖</button>
+                </div>
+                <div class="rolling-action">
+                    <button id="btn-start" class="btn-action">开始抽奖</button>
                 </div>
             </div>
 
@@ -54,7 +61,7 @@
             <div class="prize-board-section">
                 <div class="prize-board-header">
                     <h2>中奖名单</h2>
-                    <button id="btn-export" class="btn-small">导出图片</button>
+                    <button id="btn-export" class="btn-small btn-export">导出图片</button>
                 </div>
                 <div class="prize-board" id="prize-board">
                     <!-- 奖项列表将通过 JS 动态生成 -->
@@ -117,4 +124,5 @@
     <script src="js/effects.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>
