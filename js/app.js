@@ -859,7 +859,7 @@ class LuckyDrawApp {
 
         // 绘制标题
         ctx.fillStyle = '#2D1B69';
-        ctx.font = 'bold 56px Arial';
+        ctx.font = 'bold 60px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${this.config.eventTitle} - 中奖名单`, canvas.width / 2, 80);
@@ -867,53 +867,55 @@ class LuckyDrawApp {
         // 定义奖项小球颜色
         const ballColors = [
             { bg: ['#FFD700', '#FFEC8B'], shadow: 'rgba(255, 215, 0, 0.4)', text: '#DC2626' },  // 一等奖：金色
-            { bg: ['#3B82F6', '#60A5FA'], shadow: 'rgba(59, 130, 246, 0.4)', text: '#DC2626' },  // 二等奖：蓝色
-            { bg: ['#CD7F32', '#DEB887'], shadow: 'rgba(205, 127, 50, 0.4)', text: '#DC2626' },  // 三等奖：铜色
-            { bg: ['#FF6B6B', '#FF8E8E'], shadow: 'rgba(255, 107, 107, 0.4)', text: '#DC2626' }   // 幸运奖：红色
+            { bg: ['#3B82F6', '#60A5FA'], shadow: 'rgba(59, 130, 246, 0.4)', text: '#FFFFFF' },  // 二等奖：蓝色
+            { bg: ['#CD7F32', '#DEB887'], shadow: 'rgba(205, 127, 50, 0.4)', text: '#FFFFFF' },  // 三等奖：铜色
+            { bg: ['#FF6B6B', '#FF8E8E'], shadow: 'rgba(255, 107, 107, 0.4)', text: '#FFFFFF' }   // 幸运奖：红色
         ];
 
-        // 绘制奖项
-        let y = 180;
-        const ballRadius = 35;
-        const ballSpacing = 80;
+        // 绘制奖项 - 放大尺寸
+        let y = 200;
+        const ballRadius = 45;  // 从35增加到45
+        const ballSpacing = 110; // 从80增加到110避免重叠
         const ballWidth = ballRadius * 2;
 
         this.config.prizes.forEach((prize, index) => {
             const winners = this.state.winners[index];
             const colors = ballColors[index] || ballColors[3];
 
-            // 绘制奖项名称
+            // 绘制奖项名称 - 放大字体
             ctx.fillStyle = '#2D1B69';
-            ctx.font = 'bold 32px Arial';
+            ctx.font = 'bold 42px Arial';  // 从32px增加到42px
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
-            ctx.fillText(`${prize.name} (${winners.length}/${prize.count})`, 100, y);
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.fillText(`${prize.name} (${winners.length}/${prize.count})`, 80, y);
 
             // 绘制中奖号码小球
-            let x = 100;
-            const startY = y + 50;
+            let x = 80;
+            const startY = y + 70;  // 从50增加到70，增加间距
             let currentLineY = startY;
 
             winners.forEach((winner, winnerIndex) => {
                 // 检查是否需要换行
-                if (x + ballWidth > canvas.width - 100) {
-                    x = 100;
-                    currentLineY += ballWidth + 15;
+                if (x + ballWidth > canvas.width - 80) {
+                    x = 80;
+                    currentLineY += ballWidth + 25;  // 从15增加到25
                 }
 
                 // 绘制小球阴影
                 ctx.beginPath();
                 ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
                 ctx.fillStyle = colors.shadow;
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+                ctx.shadowBlur = 12;
                 ctx.shadowOffsetX = 0;
-                ctx.shadowOffsetY = 5;
+                ctx.shadowOffsetY = 6;
                 ctx.fill();
 
                 // 绘制小球背景（渐变）
                 const ballGradient = ctx.createRadialGradient(
-                    x + ballRadius - 10, currentLineY + ballRadius - 10, 0,
+                    x + ballRadius - 12, currentLineY + ballRadius - 12, 0,
                     x + ballRadius, currentLineY + ballRadius, ballRadius
                 );
                 ballGradient.addColorStop(0, colors.bg[1]);
@@ -923,39 +925,60 @@ class LuckyDrawApp {
                 ctx.arc(x + ballRadius, currentLineY + ballRadius, ballRadius, 0, Math.PI * 2);
                 ctx.fillStyle = ballGradient;
                 ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
                 ctx.fill();
 
                 // 绘制高光效果
                 ctx.beginPath();
-                ctx.arc(x + ballRadius - 8, currentLineY + ballRadius - 8, 8, 0, Math.PI * 2);
+                ctx.arc(x + ballRadius - 12, currentLineY + ballRadius - 12, 10, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
                 ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
                 ctx.shadowBlur = 8;
                 ctx.fill();
 
-                // 绘制数字
+                // 绘制数字 - 放大字体
                 ctx.fillStyle = colors.text;
-                ctx.font = 'bold 28px Arial';
+                ctx.font = 'bold 36px Arial';  // 从28px增加到36px
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
                 ctx.fillText(winner, x + ballRadius, currentLineY + ballRadius + 2);
 
                 x += ballSpacing;
             });
 
-            y += currentLineY - startY + ballWidth + 40;
+            y += currentLineY - startY + ballWidth + 60;  // 从40增加到60
         });
 
-        // 添加水印
-        ctx.fillStyle = 'rgba(45, 27, 105, 0.5)';
-        ctx.font = '16px Arial';
+        // 获取当前时间，精确到秒
+        const now = new Date();
+        const timeStr = now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0') + ' ' +
+            String(now.getHours()).padStart(2, '0') + ':' +
+            String(now.getMinutes()).padStart(2, '0') + ':' +
+            String(now.getSeconds()).padStart(2, '0');
+
+        // 添加截图时间
+        ctx.fillStyle = 'rgba(45, 27, 105, 0.7)';
+        ctx.font = '24px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.fillText('Powered by Choujiang-Webapp', canvas.width / 2, canvas.height - 30);
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.fillText(`截图时间：${timeStr}`, canvas.width / 2, canvas.height - 60);
+
+        // 添加水印
+        ctx.fillStyle = 'rgba(45, 27, 105, 0.4)';
+        ctx.font = '18px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('Powered by Choujiang-Webapp', canvas.width / 2, canvas.height - 25);
 
         // 下载图片
         const link = document.createElement('a');
-        link.download = `中奖名单_${new Date().toLocaleDateString()}.png`;
+        link.download = `中奖名单_${timeStr.replace(/[:\s]/g, '_')}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
 
