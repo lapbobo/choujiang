@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript 语法检查</title>
+</head>
+<body>
+    <h1>JavaScript 语法检查</h1>
+    <div id="error-output"></div>
+    <script>
+        try {
+            // 加载并检查 JavaScript 文件
+            const script = document.createElement('script');
+            script.src = 'js/app.js';
+            script.onload = function() {
+                document.getElementById('error-output').innerHTML = '<p style="color: green;">✅ JavaScript 语法检查通过！</p>';
+            };
+            script.onerror = function(e) {
+                document.getElementById('error-output').innerHTML = '<p style="color: red;">❌ JavaScript 语法错误：</p><pre>' + e.error + '</pre>';
+            };
+            document.head.appendChild(script);
+        } catch (e) {
+            document.getElementById('error-output').innerHTML = '<p style="color: red;">❌ 加载失败：</p><pre>' + e + '</pre>';
+        }
+    </script>
+</body>
+</html>
