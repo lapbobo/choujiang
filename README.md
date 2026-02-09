@@ -2,6 +2,8 @@
 
 一款专为线下大屏投屏场景设计的轻量级抽奖 Web 网页。
 
+你可以通过 https://lapbobo.github.io/choujiang/ 访问
+
 ## 功能特性
 
 ### 核心功能
